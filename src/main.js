@@ -8,6 +8,10 @@ import axios from 'axios'
 
 // TODO: 为何要在挂载原型链前配置baseURL，顺序互换有何影响？
 axios.defaults.baseURL = 'https://www.liulongbin.top:8888/api/private/v1/'
+axios.interceptors.request.use(config => {
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  return config
+})
 Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
