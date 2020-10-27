@@ -87,7 +87,12 @@
     </el-card>
 
     <!-- 添加用户的对话框 -->
-    <el-dialog title="添加用户" :visible.sync="addDialogVisible" width="50%">
+    <el-dialog
+      title="添加用户"
+      :visible.sync="addDialogVisible"
+      width="50%"
+      @close="addDialogClose"
+    >
       <el-form
         :model="addForm"
         :rules="addFormRules"
@@ -109,9 +114,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false"
-          >确 定
-        </el-button>
+        <el-button type="primary" @click="addUser">确 定 </el-button>
       </span>
     </el-dialog>
   </div>
@@ -226,9 +229,24 @@ export default {
       this.$message.success(res.meta.msg)
     },
 
-    // 添加用户
+    // 关闭添加用户的对话框后，重置表单
+    addDialogClose() {
+      this.$refs.addFormRef.resetFields()
+    },
+
+    // 添加用户 [API 1.3.2]
     addUser() {
-      // this.addDialogVisible = true
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('users', this.addForm)
+        // console.log(res)
+        if (res.meta.status !== 201) {
+          return this.$message.error('添加用户失败')
+        }
+        this.$message.success('添加用户成功')
+        this.addDialogVisible = false
+        this.getUserList()
+      })
     },
   },
 }
