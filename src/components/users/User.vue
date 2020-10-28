@@ -236,7 +236,7 @@ export default {
         params: this.queryInfo,
       })
       if (res.meta.status !== 200) {
-        return this.$message.error('获取用户列表失败！')
+        return this.$message.error(res.meta.msg)
       }
       this.userList = res.data.users
       this.total = res.data.total
@@ -280,9 +280,9 @@ export default {
         if (!valid) return
         const { data: res } = await this.$http.post('users', this.addForm)
         if (res.meta.status !== 201) {
-          return this.$message.error('添加用户失败')
+          return this.$message.error(res.meta.msg)
         }
-        this.$message.success('添加用户成功')
+        this.$message.success(res.meta.msg)
         this.addDialogVisible = false
         this.getUserList()
       })
