@@ -47,29 +47,36 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="175px">
-          <!-- 修改按钮 -->
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-
-          <!-- 删除按钮 -->
-          <el-button
-            type="danger"
-            icon="el-icon-delete"
-            size="mini"
-          ></el-button>
-
-          <!-- 分配角色按钮及 Tooltip 提示框 -->
-          <el-tooltip
-            effect="dark"
-            content="分配角色"
-            placement="top"
-            :enterable="false"
-          >
+          <template slot-scope="scope">
+            <!-- 修改按钮 -->
             <el-button
-              type="warning"
-              icon="el-icon-setting"
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+              @click="editDialog(scope.row.id)"
+            ></el-button>
+
+            <!-- 删除按钮 -->
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
               size="mini"
             ></el-button>
-          </el-tooltip>
+
+            <!-- 分配角色按钮及 Tooltip 提示框 -->
+            <el-tooltip
+              effect="dark"
+              content="分配角色"
+              placement="top"
+              :enterable="false"
+            >
+              <el-button
+                type="warning"
+                icon="el-icon-setting"
+                size="mini"
+              ></el-button>
+            </el-tooltip>
+          </template>
         </el-table-column>
       </el-table>
 
@@ -117,6 +124,35 @@
         <el-button type="primary" @click="addUser">确 定 </el-button>
       </span>
     </el-dialog>
+
+    <!-- 修改用户的对话框 -->
+    <el-dialog
+      title="修改用户"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClose"
+    >
+      <el-form
+        :model="editForm"
+        :rules="addFormRules"
+        ref="editFormRef"
+        label-width="70px"
+      >
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="editForm.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUser">确 定 </el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -155,6 +191,8 @@ export default {
         email: 'test@gmail.com',
         mobile: '13812341234',
       },
+      editDialogVisible: false,
+      editForm: {},
 
       // 添加用户表单的校验规则
       addFormRules: {
@@ -224,7 +262,7 @@ export default {
       )
       if (res.meta.status !== 200) {
         userInfo.mg_state = !userInfo.mg_state
-        return this.$message.error('修改用户状态失败！')
+        return this.$message.error(res.meta.msg)
       }
       this.$message.success(res.meta.msg)
     },
@@ -239,12 +277,40 @@ export default {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('users', this.addForm)
-        // console.log(res)
         if (res.meta.status !== 201) {
           return this.$message.error('添加用户失败')
         }
         this.$message.success('添加用户成功')
         this.addDialogVisible = false
+        this.getUserList()
+      })
+    },
+
+    // 显示修改用户的对话框 [API 1.3.4]
+    async editDialog(id) {
+      const { data: res } = await this.$http.get('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+
+    // 关闭对话框后，重置表单
+    editDialogClose() {
+      this.$refs.editFormRef.resetFields()
+    },
+
+    // 点击确定按钮，修改用户 []
+    editUser() {
+      this.$refs.editFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.put('users/' + this.editForm.id)
+        if (res.meta.status !== 200) {
+          return this.$message.error(res.meta.msg)
+        }
+        this.$message.success(res.meta.msg)
+        this.editDialogVisible = false
         this.getUserList()
       })
     },
