@@ -11,6 +11,7 @@
     <el-card>
       <el-row :gutter="20">
         <el-col :span="8">
+          <!-- 搜索功能 -->
           <el-input
             placeholder="请输入搜索内容"
             v-model="queryInfo.query"
@@ -31,10 +32,10 @@
         </el-col>
       </el-row>
 
-      <!-- table 表格 -->
+      <!-- table 表格，展示已有用户 -->
       <el-table :data="userList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="姓名" prop="username"></el-table-column>
+        <el-table-column label="用户名" prop="username"></el-table-column>
         <el-table-column label="邮箱" prop="email"></el-table-column>
         <el-table-column label="电话" prop="mobile"></el-table-column>
         <el-table-column label="角色" prop="role_name"></el-table-column>
@@ -138,7 +139,7 @@
         ref="editFormRef"
         label-width="70px"
       >
-        <el-form-item label="用户名" prop="username">
+        <el-form-item label="用户名">
           <el-input v-model="editForm.username" disabled></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
@@ -194,7 +195,7 @@ export default {
       editDialogVisible: false,
       editForm: {},
 
-      // 添加用户表单的校验规则
+      // 添加用户和修改用户的表单校验规则
       addFormRules: {
         username: [
           { required: 'true', message: '请输入用户名', trigger: 'blur' },
@@ -229,6 +230,7 @@ export default {
     this.getUserList()
   },
   methods: {
+    // 获取用户列表 [API 1.3.1]
     async getUserList() {
       const { data: res } = await this.$http.get('users', {
         params: this.queryInfo,
@@ -296,12 +298,12 @@ export default {
       this.editDialogVisible = true
     },
 
-    // 关闭对话框后，重置表单
+    // 关闭修改用户的对话框后，重置表单
     editDialogClose() {
       this.$refs.editFormRef.resetFields()
     },
 
-    // 点击确定按钮，修改用户 []
+    // 点击确定按钮，修改用户 [1.3.5]
     editUser() {
       this.$refs.editFormRef.validate(async valid => {
         if (!valid) return
