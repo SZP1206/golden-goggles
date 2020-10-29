@@ -31,7 +31,11 @@
               @click="editDialog(scope.row.id)"
               >编辑</el-button
             >
-            <el-button type="danger" icon="el-icon-delete" size="mini"
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              @click="delRole(scope.row.id)"
               >删除</el-button
             >
             <el-button type="warning" icon="el-icon-setting" size="mini"
@@ -186,6 +190,26 @@ export default {
         this.$message.success('角色修改成功！')
         this.getRoleList()
       })
+    },
+    delRole(id) {
+      this.$msgbox
+        .confirm('此操作将永久删除该角色, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        // eslint-disable-next-line space-before-function-paren
+        .then(async () => {
+          const { data: res } = await this.$http.delete('roles/' + id)
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          this.$message.success(res.meta.msg)
+          this.getRoleList()
+        })
+        .catch(() => {
+          this.$message.info('取消了删除')
+        })
     },
   },
 }
