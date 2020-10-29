@@ -7,7 +7,7 @@
       <el-breadcrumb-item>活动列表</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <!-- 卡片视图 -->
+    <!-- 卡片视图，展示页面主体 -->
     <el-card>
       <el-row :gutter="20">
         <el-col :span="8">
