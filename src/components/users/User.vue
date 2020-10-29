@@ -62,6 +62,7 @@
               type="danger"
               icon="el-icon-delete"
               size="mini"
+              @click="deleteUser(scope.row.id)"
             ></el-button>
 
             <!-- 分配角色按钮及 Tooltip 提示框 -->
@@ -315,6 +316,30 @@ export default {
         this.editDialogVisible = false
         this.getUserList()
       })
+    },
+
+    // 删除用户 [API 1.3.6]
+    // Tip: 按需引入 ElementUI , MessageBox 组件有4种调用方法：
+    // MessageBox, MessageBox.alert, MessageBox.confirm 和 MessageBox.prompt
+    deleteUser(id) {
+      this.$msgbox
+        .confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        // eslint-disable-next-line space-before-function-paren
+        .then(async () => {
+          const { data: res } = await this.$http.delete('users/' + id)
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          this.$message.success(res.meta.msg)
+          this.getUserList()
+        })
+        .catch(() => {
+          this.$message.info('取消了删除')
+        })
     },
   },
 }
