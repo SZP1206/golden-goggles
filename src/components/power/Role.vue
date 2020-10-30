@@ -27,7 +27,9 @@
             >
               <!-- 一级权限 -->
               <el-col :span="6">
-                <el-tag> {{ item1.authName }} </el-tag>
+                <el-tag closable @close="delRight(scope.row, item1.id)">
+                  {{ item1.authName }}
+                </el-tag>
                 <i class="el-icon-caret-right"></i>
               </el-col>
               <!-- 二级和三级权限 -->
@@ -39,7 +41,13 @@
                 >
                   <!-- 二级权限 -->
                   <el-col :span="8">
-                    <el-tag type="success"> {{ item2.authName }} </el-tag>
+                    <el-tag
+                      type="success"
+                      closable
+                      @close="delRight(scope.row, item2.id)"
+                    >
+                      {{ item2.authName }}
+                    </el-tag>
                     <i class="el-icon-caret-right"></i>
                   </el-col>
 
@@ -49,6 +57,8 @@
                       type="warning"
                       v-for="item3 in item2.children"
                       :key="item3.id"
+                      closable
+                      @close="delRight(scope.row, item2.id)"
                     >
                       {{ item3.authName }}
                     </el-tag>
@@ -230,6 +240,8 @@ export default {
         this.getRoleList()
       })
     },
+
+    // 删除角色 [API 1.5.5]
     delRole(id) {
       this.$msgbox
         .confirm('此操作将永久删除该角色, 是否继续?', '提示', {
@@ -248,6 +260,31 @@ export default {
         })
         .catch(() => {
           this.$message.info('取消了删除')
+        })
+    },
+
+    // 点击 tag 标签的删除按钮，删除权限 [API 1.5.7]
+    delRight(role, rightId) {
+      this.$msgbox
+        .confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        // eslint-disable-next-line space-before-function-paren
+        .then(async () => {
+          const { data: res } = await this.$http.delete(
+            // eslint-disable-next-line comma-dangle
+            `roles/${role.id}/rights/${rightId}`
+          )
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          this.$message.success(res.meta.msg)
+          role.children = res.data
+        })
+        .catch(() => {
+          this.$message.info('已取消')
         })
     },
   },
