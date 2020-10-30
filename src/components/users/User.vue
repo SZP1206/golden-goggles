@@ -76,6 +76,7 @@
                 type="warning"
                 icon="el-icon-setting"
                 size="mini"
+                @click="assignRoleDialog(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -155,6 +156,33 @@
         <el-button type="primary" @click="editUser">确 定 </el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配角色的对话框 -->
+    <el-dialog
+      title="分配角色"
+      :visible.sync="assignRoleDialogVisible"
+      width="50%"
+      @close="assignRoleDialogClose"
+    >
+      <p>当前用户： {{ user.username }}</p>
+      <p>当前角色： {{ user.role_name }}</p>
+      <p>
+        分配新角色：
+        <el-select v-model="selectedRole" placeholder="请选择">
+          <el-option
+            v-for="item in roleList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+      </p>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="assignRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="assignRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -225,6 +253,10 @@ export default {
           { validator: checkMobile, trigger: 'blur' },
         ],
       },
+      assignRoleDialogVisible: false,
+      user: {},
+      roleList: [],
+      selectedRole: '',
     }
   },
   created() {
@@ -341,6 +373,39 @@ export default {
           this.$message.info('取消了删除')
         })
     },
+
+    // 展示分配角色的对话框 [API 1.5.1]
+    async assignRoleDialog(user) {
+      this.user = user
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.roleList = res.data
+      // console.log(this.roleList)
+      this.assignRoleDialogVisible = true
+    },
+
+    // 关闭分配角色的对话框后，重置选单
+    assignRoleDialogClose() {
+      this.selectedRole = ''
+    },
+
+    // 点击确定按钮，分配角色
+    async assignRole() {
+      // console.log(this.selectedRole)
+      const { data: res } = await this.$http.put(`users/${this.user.id}/role`, {
+        rid: this.selectedRole,
+      })
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
+      this.getUserList()
+    },
+    // TODO:
+    // 【问题】分配新角色后，表格中用户列表依旧显示“超级管理员”
+    // 粗看应该是接口服务器的问题（甩锅成就：+1）
   },
 }
 </script>

@@ -17,8 +17,10 @@ import {
   MenuItem,
   Message,
   MessageBox,
+  Option,
   Pagination,
   Row,
+  Select,
   Submenu,
   Switch,
   Table,
@@ -52,5 +54,7 @@ Vue.use(Pagination)
 Vue.use(Dialog)
 Vue.use(Tag)
 Vue.use(Tree)
+Vue.use(Select)
+Vue.use(Option)
 Vue.prototype.$message = Message
 Vue.prototype.$msgbox = MessageBox

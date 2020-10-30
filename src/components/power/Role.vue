@@ -272,6 +272,7 @@ export default {
         }
         this.$message.success('角色修改成功！')
         this.getRoleList()
+        this.editRoleVisible = false
       })
     },
 
