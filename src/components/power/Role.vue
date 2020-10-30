@@ -18,7 +18,46 @@
       </el-row>
 
       <el-table :data="roleList" border stripe>
-        <el-table-column type="expand"></el-table-column>
+        <el-table-column type="expand">
+          <template slot-scope="scope">
+            <el-row
+              v-for="(item1, index1) in scope.row.children"
+              :key="item1.id"
+              :class="['bdBottom', index1 === 0 ? 'bdTop' : '', 'vCenter']"
+            >
+              <!-- 一级权限 -->
+              <el-col :span="6">
+                <el-tag> {{ item1.authName }} </el-tag>
+                <i class="el-icon-caret-right"></i>
+              </el-col>
+              <!-- 二级和三级权限 -->
+              <el-col :span="18">
+                <el-row
+                  v-for="(item2, index2) in item1.children"
+                  :key="item2.id"
+                  :class="[index2 === 0 ? '' : 'bdTop', 'vCenter']"
+                >
+                  <!-- 二级权限 -->
+                  <el-col :span="8">
+                    <el-tag type="success"> {{ item2.authName }} </el-tag>
+                    <i class="el-icon-caret-right"></i>
+                  </el-col>
+
+                  <!-- 三级权限 -->
+                  <el-col :span="16">
+                    <el-tag
+                      type="warning"
+                      v-for="item3 in item2.children"
+                      :key="item3.id"
+                    >
+                      {{ item3.authName }}
+                    </el-tag>
+                  </el-col>
+                </el-row>
+              </el-col>
+            </el-row>
+          </template>
+        </el-table-column>
         <el-table-column type="index"></el-table-column>
         <el-table-column label="角色名称" prop="roleName"></el-table-column>
         <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
@@ -215,4 +254,23 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.el-tag {
+  margin: 7px;
+}
+
+// 展开行中权限列表的上边框线
+.bdTop {
+  border-top: 1px solid #eee;
+}
+
+// 展开行中权限列表的下边框线
+.bdBottom {
+  border-bottom: 1px solid #eee;
+}
+
+.vCenter {
+  display: flex;
+  align-items: center;
+}
+</style>
