@@ -58,7 +58,7 @@
                       v-for="item3 in item2.children"
                       :key="item3.id"
                       closable
-                      @close="delRight(scope.row, item2.id)"
+                      @close="delRight(scope.row, item3.id)"
                     >
                       {{ item3.authName }}
                     </el-tag>
@@ -166,6 +166,7 @@
         default-expand-all
         show-checkbox
         :default-checked-keys="defkeys"
+        ref="treeRef"
       ></el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button @click="assignRightDialogVisible = false">取 消</el-button>
@@ -199,6 +200,7 @@ export default {
         label: 'authName',
       },
       defkeys: [],
+      roleId: '',
     }
   },
   created() {
@@ -298,7 +300,7 @@ export default {
     // 点击 tag 标签的删除按钮，删除权限 [API 1.5.7]
     delRight(role, rightId) {
       this.$msgbox
-        .confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        .confirm('确认删除?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -320,7 +322,7 @@ export default {
         })
     },
 
-    // 展示分配权限的对话框
+    // 展示分配权限的对话框 [API 1.4.1]
     async assignRightDialog(role) {
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) {
@@ -332,6 +334,9 @@ export default {
       // 获取所有三级节点的id，并将其存入 defKeys 数组中
       this.getLeafKeys(role, this.defkeys)
       this.assignRightDialogVisible = true
+
+      // 保存到 data 备用。点击确定按钮时需要传的参数
+      this.roleId = role.id
     },
 
     // 递归获取所有三级权限的id
@@ -350,8 +355,29 @@ export default {
     },
 
     // 分配权限 [API 1.5.6]
-    assignRight() {
+    async assignRight() {
+      // 获取所有已选中和半选中的节点id，展开后放入数组
+      const keys = [
+        ...this.$refs.treeRef.getCheckedKeys(),
+        ...this.$refs.treeRef.getHalfCheckedNodes(),
+      ]
+
+      // 将数组转为字符串格式
+      const idStr = keys.join()
+      console.log(idStr)
+
+      // 发起HTTP请求
+      const { data: res } = await this.$http.post(
+        `roles/${this.roleId}/rights`,
+        // eslint-disable-next-line comma-dangle
+        { rids: idStr }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
       this.assignRightDialogVisible = false
+      this.getRoleList()
     },
   },
 }
