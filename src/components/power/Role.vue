@@ -87,7 +87,11 @@
               @click="delRole(scope.row.id)"
               >删除</el-button
             >
-            <el-button type="warning" icon="el-icon-setting" size="mini"
+            <el-button
+              type="warning"
+              icon="el-icon-setting"
+              size="mini"
+              @click="assignRightDialog(scope.row)"
               >分配权限</el-button
             >
           </template>
@@ -147,6 +151,27 @@
         <el-button type="primary" @click="editRole">确 定 </el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配权限的对话框 -->
+    <el-dialog
+      title="分配权限"
+      :visible.sync="assignRightDialogVisible"
+      width="50%"
+      @close="resetDefKeys"
+    >
+      <el-tree
+        :data="rightList"
+        :props="treeProps"
+        node-key="id"
+        default-expand-all
+        show-checkbox
+        :default-checked-keys="defkeys"
+      ></el-tree>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="assignRightDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="assignRight">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -167,6 +192,13 @@ export default {
       },
       editRoleVisible: false,
       editRoleForm: {},
+      assignRightDialogVisible: false,
+      rightList: [],
+      treeProps: {
+        children: 'children',
+        label: 'authName',
+      },
+      defkeys: [],
     }
   },
   created() {
@@ -286,6 +318,40 @@ export default {
         .catch(() => {
           this.$message.info('已取消')
         })
+    },
+
+    // 展示分配权限的对话框
+    async assignRightDialog(role) {
+      const { data: res } = await this.$http.get('rights/tree')
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      console.log(res.data)
+      this.rightList = res.data
+
+      // 获取所有三级节点的id，并将其存入 defKeys 数组中
+      this.getLeafKeys(role, this.defkeys)
+      this.assignRightDialogVisible = true
+    },
+
+    // 递归获取所有三级权限的id
+    getLeafKeys(node, arr) {
+      if (!node.children) {
+        return arr.push(node.id)
+      }
+      node.children.forEach(item => {
+        this.getLeafKeys(item, arr)
+      })
+    },
+
+    // 关闭分配权限的对话框时，重置 defKeys 数组
+    resetDefKeys() {
+      this.defkeys = []
+    },
+
+    // 分配权限 [API 1.5.6]
+    assignRight() {
+      this.assignRightDialogVisible = false
     },
   },
 }
