@@ -376,7 +376,9 @@ export default {
 
     // 展示分配角色的对话框 [API 1.5.1]
     async assignRoleDialog(user) {
+      // 点击确定按钮提交时，需要的参数
       this.user = user
+
       const { data: res } = await this.$http.get('roles')
       if (res.meta.status !== 200) {
         return this.$message.error(res.meta.msg)
