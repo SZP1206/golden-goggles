@@ -6,7 +6,7 @@ import Welcome from '../components/Welcome'
 import User from '../components/users/User'
 import Rights from '../components/power/Rights'
 import Role from '../components/power/Role'
-import GoodsCategory from '../components/goods/Goods_category'
+import GoodsCategory from '../components/goods/GoodsCategory'
 
 Vue.use(VueRouter)
 

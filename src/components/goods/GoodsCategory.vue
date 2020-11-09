@@ -10,13 +10,15 @@
     <el-card>
       <el-row>
         <el-col>
-          <el-button type="primary">添加分类</el-button>
+          <el-button type="primary" @click="showAddCategoryDialog"
+            >添加分类</el-button
+          >
         </el-col>
       </el-row>
 
       <!-- 表格 -->
       <tree-table
-        index-text="#"
+        class="tree-table"
         :data="categoryList"
         :columns="columns"
         :border="true"
@@ -24,6 +26,7 @@
         :selection-type="false"
         :expand-type="false"
         show-index
+        index-text="#"
       >
         <!-- 是否有效的模板列 -->
         <template slot="isOK" slot-scope="scope">
@@ -62,7 +65,49 @@
           >
         </template>
       </tree-table>
+
+      <!-- 页码条 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-sizes="[1, 2, 5, 10]"
+        :page-size="queryInfo.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      >
+      </el-pagination>
     </el-card>
+
+    <!-- 添加商品分类的对话框 -->
+    <el-dialog title="添加分类" :visible.sync="addCategoryDialogVisible">
+      <el-form :model="addCategoryForm" :rules="addCategoryFormRules">
+        <el-form-item label="分类名称" label-width="80px" prop="name">
+          <el-input v-model="addCategoryForm.cat_name"></el-input>
+        </el-form-item>
+        <el-form-item label="父级分类" label-width="80px">
+          <el-cascader
+            :options="parentCategoryList"
+            :props="{
+              expandTrigger: 'hover',
+              label: 'cat_name',
+              value: 'cat_id',
+              children: 'children',
+              checkStrictly: true,
+            }"
+            v-model="selectedCategoryKeys"
+            @change="parentCategoryChange"
+            clearable
+          ></el-cascader>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addCategoryDialogVisible = false"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -75,7 +120,10 @@ export default {
         pagenum: 1,
         pagesize: 5,
       },
+
+      // 全部分类列表
       categoryList: [],
+
       total: 0,
       columns: [
         {
@@ -109,13 +157,35 @@ export default {
           width: '200px',
         },
       ],
+      addCategoryDialogVisible: false,
+      addCategoryForm: {
+        cat_name: '',
+        cat_pid: 0,
+        cat_level: 0,
+      },
+
+      // 父级分类列表
+      parentCategoryList: [],
+
+      addCategoryFormRules: {
+        name: [
+          {
+            required: true,
+            message: '请输入分配名称',
+            trigger: 'blur',
+          },
+        ],
+      },
+
+      // 级联选择器中选中项
+      selectedCategoryKeys: [],
     }
   },
   created() {
     this.getCategoryList()
   },
   methods: {
-    // 获取商品分类列表 [API 1.5.1]
+    // 获取商品分类列表 [API 1.6.1]
     async getCategoryList() {
       const { data: res } = await this.$http.get('categories', {
         params: this.queryInfo,
@@ -128,6 +198,39 @@ export default {
       this.total = res.data.total
     },
 
+    // 监听页码条 pagesize 改变的事件
+    handleSizeChange(newSize) {
+      this.queryInfo.pagesize = newSize
+      this.getCategoryList()
+    },
+
+    // 监听页码条 pagenum 改变的事件
+    handleCurrentChange(newNum) {
+      this.queryInfo.pagenum = newNum
+      this.getCategoryList()
+    },
+
+    // 获取所有父级分类（即一层和二层权限） [API 1.6.1]
+    async getParentCategoryList() {
+      const { data: res } = await this.$http.get('categories', {
+        params: { type: 2 },
+      })
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.parentCategoryList = res.data
+    },
+
+    parentCategoryChange() {
+      console.log(this.selectedCategoryKeys)
+    },
+
+    // 展示添加分类的对话框
+    showAddCategoryDialog() {
+      this.getParentCategoryList()
+      this.addCategoryDialogVisible = true
+    },
+
     // 编辑商品分类
     editCategory() {},
 
@@ -137,4 +240,12 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.el-cascader {
+  width: 100%;
+}
+
+.tree-table {
+  margin-top: 15px;
+}
+</style>
