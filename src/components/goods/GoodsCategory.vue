@@ -329,7 +329,21 @@ export default {
     },
 
     // 删除商品分类
-    removeCategory() {},
+    removeCategory(category) {
+      this.$msgbox
+        .confirm('确定删除', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        .then(() => {
+          this.$http.delete(`categories/${category.cat_id}`)
+          this.getCategoryList()
+        })
+        .catch(() => {
+          this.$message.info('已取消操作')
+        })
+    },
   },
 }
 </script>
