@@ -80,9 +80,17 @@
     </el-card>
 
     <!-- 添加商品分类的对话框 -->
-    <el-dialog title="添加分类" :visible.sync="addCategoryDialogVisible">
-      <el-form :model="addCategoryForm" :rules="addCategoryFormRules">
-        <el-form-item label="分类名称" label-width="80px" prop="name">
+    <el-dialog
+      title="添加分类"
+      :visible.sync="addCategoryDialogVisible"
+      @close="addCategoryDialogClose"
+    >
+      <el-form
+        :model="addCategoryForm"
+        :rules="addCategoryFormRules"
+        ref="addCategoryForm"
+      >
+        <el-form-item label="分类名称" label-width="80px" prop="cat_name">
           <el-input v-model="addCategoryForm.cat_name"></el-input>
         </el-form-item>
         <el-form-item label="父级分类" label-width="80px">
@@ -103,9 +111,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addCategoryDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addCategory">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -168,7 +174,7 @@ export default {
       parentCategoryList: [],
 
       addCategoryFormRules: {
-        name: [
+        cat_name: [
           {
             required: true,
             message: '请输入分配名称',
@@ -210,7 +216,7 @@ export default {
       this.getCategoryList()
     },
 
-    // 获取所有父级分类（即一层和二层权限） [API 1.6.1]
+    // 获取所有父级分类（即一层和二层分类） [API 1.6.1]
     async getParentCategoryList() {
       const { data: res } = await this.$http.get('categories', {
         params: { type: 2 },
@@ -221,14 +227,48 @@ export default {
       this.parentCategoryList = res.data
     },
 
-    parentCategoryChange() {
-      console.log(this.selectedCategoryKeys)
-    },
-
     // 展示添加分类的对话框
     showAddCategoryDialog() {
       this.getParentCategoryList()
       this.addCategoryDialogVisible = true
+    },
+
+    // 根据父级分类的变化处理表单中的数据
+    parentCategoryChange() {
+      console.log(this.selectedCategoryKeys)
+      if (this.selectedCategoryKeys.length > 0) {
+        this.addCategoryForm.cat_pid = this.selectedCategoryKeys[
+          this.selectedCategoryKeys.length - 1
+        ]
+        this.addCategoryForm.cat_level = this.selectedCategoryKeys.length
+      } else {
+        this.addCategoryForm.cat_pid = 0
+        this.addCategoryForm.cat_level = 0
+      }
+    },
+
+    // 点击确定按钮，添加分类
+    async addCategory() {
+      console.log(this.addCategoryForm)
+      const { data: res } = await this.$http.post(
+        'categories',
+        // eslint-disable-next-line comma-dangle
+        this.addCategoryForm
+      )
+      if (res.meta.status !== 201) {
+        this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
+      this.getCategoryList()
+      this.addCategoryDialogVisible = false
+    },
+
+    // 关闭对话框后，重置表单和级联选择器
+    addCategoryDialogClose() {
+      this.$refs.addCategoryForm.resetFields()
+      this.selectedCategoryKeys = []
+      this.addCategoryForm.cat_pid = 0
+      this.addCategoryForm.cat_level = 0
     },
 
     // 编辑商品分类
