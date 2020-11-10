@@ -328,7 +328,9 @@ export default {
       })
     },
 
-    // 删除商品分类
+    // 删除商品分类 [API 1.6.5]
+    // TODO: 删除分类后列表数据未刷新。
+    // 未能100%复现，可能与网络质量有关。
     removeCategory(category) {
       this.$msgbox
         .confirm('确定删除', '提示', {
