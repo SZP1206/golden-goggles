@@ -53,7 +53,7 @@
             type="primary"
             icon="el-icon-edit"
             size="mini"
-            @click="editCategory(scope.row)"
+            @click="showEditCategoryDialog(scope.row)"
             >编辑</el-button
           >
           <el-button
@@ -112,6 +112,23 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addCategory">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 编辑分类的对话框 -->
+    <el-dialog title="修改分类" :visible.sync="editCategoryDialogVisible">
+      <el-form
+        :model="editCategoryForm"
+        :rules="addCategoryFormRules"
+        ref="editCategoryFormRef"
+      >
+        <el-form-item label="分类名称" label-width="80px" prop="cat_name">
+          <el-input v-model="editCategoryForm.cat_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editCategoryDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editCategory">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -185,6 +202,8 @@ export default {
 
       // 级联选择器中选中项
       selectedCategoryKeys: [],
+      editCategoryDialogVisible: false,
+      editCategoryForm: {},
     }
   },
   created() {
@@ -271,8 +290,43 @@ export default {
       this.addCategoryForm.cat_level = 0
     },
 
-    // 编辑商品分类
-    editCategory() {},
+    // 编辑商品分类-查询到的分类信息将展示在编辑分类的对话框中 [API 1.6.3]
+    async showEditCategoryDialog(category) {
+      const { data: res } = await this.$http.get(
+        // eslint-disable-next-line comma-dangle
+        `categories/${category.cat_id}`
+      )
+      if (res.meta.status !== 200) {
+        // TODO:
+        // QUESTION: 此处不做 return 处理，是否可以高容错？
+        // 在此种场景中：仅 1.6.3 API 接口故障，无法查询分类信息。
+        // 是否可以在不填充分类名称的情况下，不影响提交操作？
+        this.$message.error(res.meta.status)
+      } else {
+        this.editCategoryForm = res.data
+      }
+      this.editCategoryDialogVisible = true
+    },
+
+    // 编辑分类，点击确定按钮提交
+    editCategory() {
+      this.$refs.editCategoryFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.put(
+          `categories/${this.editCategoryForm.cat_id}`,
+          {
+            cat_name: this.editCategoryForm.cat_name,
+            // eslint-disable-next-line comma-dangle
+          }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error(res.meta.msg)
+        }
+        this.$message.success(res.meta.msg)
+        this.getCategoryList()
+        this.editCategoryDialogVisible = false
+      })
+    },
 
     // 删除商品分类
     removeCategory() {},
