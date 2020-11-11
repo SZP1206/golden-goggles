@@ -333,7 +333,7 @@ export default {
     // 未能100%复现，可能与网络质量有关。
     removeCategory(category) {
       this.$msgbox
-        .confirm('确定删除', '提示', {
+        .confirm('确定删除？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',

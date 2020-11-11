@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import {
+  Alert,
   Aside,
   Breadcrumb,
   BreadcrumbItem,
@@ -58,5 +59,6 @@ Vue.use(Tree)
 Vue.use(Select)
 Vue.use(Option)
 Vue.use(Cascader)
+Vue.use(Alert)
 Vue.prototype.$message = Message
 Vue.prototype.$msgbox = MessageBox
