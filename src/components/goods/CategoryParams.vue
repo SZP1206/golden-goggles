@@ -20,7 +20,19 @@
         v-model="selectedCategoryKeys"
         :options="categoryList"
         :props="cascaderProps"
+        @change="handleChange"
       ></el-cascader>
+
+      <el-tabs v-model="activeName" @tab-click="handleTabClick">
+        <el-tab-pane label="动态参数" name="many">
+          <el-button type="primary" size="mini" :disabled="isBtnDisabled"
+            >添加参数</el-button
+          >
+        </el-tab-pane>
+        <el-tab-pane label="静态属性" name="only">
+          <el-button type="primary" size="mini">添加属性</el-button>
+        </el-tab-pane>
+      </el-tabs>
     </el-card>
   </div>
 </template>
@@ -41,12 +53,27 @@ export default {
         label: 'cat_name',
         children: 'children',
       },
+      activeName: 'many',
+      paramsList: [],
     }
+  },
+  computed: {
+    // 是否禁用添加按钮
+    isBtnDisabled() {
+      if (this.selectedCategoryKeys.length !== 3) {
+        return true
+      }
+      return false
+    },
+    categoryId() {
+      return this.selectedCategoryKeys[this.selectedCategoryKeys.length - 1]
+    },
   },
   created() {
     this.getCategoryList()
   },
   methods: {
+    // 获取分类数据列表 [API 1.6.1]
     async getCategoryList() {
       const { data: res } = await this.$http.get('categories')
       console.log(res)
@@ -54,6 +81,37 @@ export default {
         return this.$message.error(res.meta.msg)
       }
       this.categoryList = res.data
+    },
+
+    // 级联选择器 选中项 改变的事件
+    handleChange() {
+      this.getParamsList()
+    },
+
+    // 执行查询分类参数 [API 1.7.1]
+    async getParamsList() {
+      const { data: res } = await this.$http.get(
+        `categories/${this.categoryId}/attributes`,
+        {
+          params: { sel: this.activeName },
+          // eslint-disable-next-line comma-dangle
+        }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      if (this.activeName === 'many') {
+        this.manyParamsList = res.data
+      } else {
+        this.onlyParamsList = res.data
+      }
+      console.log(this.onlyParamsList)
+      console.log(this.manyParamsList)
+    },
+
+    // 点击页签
+    handleTabClick() {
+      this.getParamsList()
     },
   },
 }
