@@ -20,6 +20,7 @@
         v-model="selectedCategoryKeys"
         :options="categoryList"
         :props="cascaderProps"
+        placeholder="请选择要操作的分类"
         @change="handleChange"
       ></el-cascader>
 
@@ -28,9 +29,57 @@
           <el-button type="primary" size="mini" :disabled="isBtnDisabled"
             >添加参数</el-button
           >
+          <el-table :data="manyParamsList" border stripe>
+            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="index"></el-table-column>
+            <el-table-column
+              label="参数名称"
+              prop="attr_name"
+            ></el-table-column>
+            <el-table-column label="操作">
+              <template slot-scope="scope">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="showEditParamsDialog(scope.row)"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="mini"
+                  @click="deleteParams(scope.row)"
+                  >删除</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
           <el-button type="primary" size="mini">添加属性</el-button>
+          <el-table :data="onlyParamsList" border stripe>
+            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="index"></el-table-column>
+            <el-table-column
+              label="属性名称"
+              prop="attr_name"
+            ></el-table-column>
+            <el-table-column label="操作">
+              <template slot-scope="scope">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="showEditParamsDialog(scope.row)"
+                  >编辑</el-button
+                >
+                <el-button
+                  type="danger"
+                  size="mini"
+                  @click="deleteParams(scope.row)"
+                  >删除</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -54,7 +103,8 @@ export default {
         children: 'children',
       },
       activeName: 'many',
-      paramsList: [],
+      onlyParamsList: [],
+      manyParamsList: [],
     }
   },
   computed: {
@@ -98,7 +148,7 @@ export default {
         }
       )
       if (res.meta.status !== 200) {
-        return this.$message.error(res.meta.msg)
+        return this.$message.error('请选择要操作的分类')
       }
       if (this.activeName === 'many') {
         this.manyParamsList = res.data
@@ -113,7 +163,13 @@ export default {
     handleTabClick() {
       this.getParamsList()
     },
+
+    // 展示编辑动态参数或静态属性的对话框
+    showEditParamsDialog() {},
   },
+
+  // 删除动态参数或静态属性
+  deleteParams() {},
 }
 </script>
 
