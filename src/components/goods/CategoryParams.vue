@@ -29,6 +29,8 @@
           <el-button type="primary" size="mini" :disabled="isBtnDisabled"
             >添加参数</el-button
           >
+
+          <!-- 展示动态参数的表格 -->
           <el-table :data="manyParamsList" border stripe>
             <el-table-column type="expand"></el-table-column>
             <el-table-column type="index"></el-table-column>
@@ -56,6 +58,8 @@
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
           <el-button type="primary" size="mini">添加属性</el-button>
+
+          <!-- 展示静态属性的表格 -->
           <el-table :data="onlyParamsList" border stripe>
             <el-table-column type="expand"></el-table-column>
             <el-table-column type="index"></el-table-column>
