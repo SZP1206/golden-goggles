@@ -119,6 +119,27 @@
         <el-button type="primary" @click="addParams">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 修改动态参数或静态属性的对话框 -->
+    <el-dialog
+      :title="'修改' + dialogText"
+      :visible.sync="editDialogVisible"
+      @close="editDialogClose"
+    >
+      <el-form :model="editForm" :rules="addFormRules" ref="editFormRef">
+        <el-form-item
+          :label="dialogText + '名称'"
+          label-width="120px"
+          prop="attr_name"
+        >
+          <el-input v-model="editForm.attr_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editParams">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -150,6 +171,8 @@ export default {
           { required: true, message: '此项为必填项', trigger: 'blur' },
         ],
       },
+      editForm: {},
+      editDialogVisible: false,
     }
   },
   computed: {
@@ -217,7 +240,41 @@ export default {
     },
 
     // 展示编辑动态参数或静态属性的对话框
-    showEditParamsDialog() {},
+    async showEditParamsDialog(params) {
+      const { data: res } = await this.$http.get(
+        `categories/${this.categoryId}/attributes/${params.attr_id}`,
+        // eslint-disable-next-line comma-dangle
+        { params: { attr_sel: this.activeName } }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+
+    // 关闭修改的对话框后，重置表单
+    editDialogClose() {
+      this.$refs.editFormRef.resetFields()
+    },
+
+    // 点击确定按钮，提交修改后的动态参数或静态属性
+    editParams(params) {
+      this.$refs.editFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.put(
+          `categories/${this.categoryId}/attributes/${this.editForm.attr_id}`,
+          // eslint-disable-next-line comma-dangle
+          { attr_name: this.editForm.attr_name, attr_sel: this.activeName }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error(res.meta.msg)
+        }
+        this.$message.success(res.meta.msg)
+        this.getParamsList()
+        this.editDialogVisible = false
+      })
+    },
 
     // 展示添加动态参数或静态属性的对话框
     showAddDialog() {
