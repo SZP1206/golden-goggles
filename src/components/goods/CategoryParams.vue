@@ -26,7 +26,11 @@
 
       <el-tabs v-model="activeName" @tab-click="handleTabClick">
         <el-tab-pane label="动态参数" name="many">
-          <el-button type="primary" size="mini" :disabled="isBtnDisabled"
+          <el-button
+            type="primary"
+            size="mini"
+            :disabled="isBtnDisabled"
+            @click="showAddDialog"
             >添加参数</el-button
           >
 
@@ -57,7 +61,13 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
-          <el-button type="primary" size="mini">添加属性</el-button>
+          <el-button
+            type="primary"
+            size="mini"
+            :disabled="isBtnDisabled"
+            @click="showAddDialog"
+            >添加属性</el-button
+          >
 
           <!-- 展示静态属性的表格 -->
           <el-table :data="onlyParamsList" border stripe>
@@ -87,6 +97,30 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 添加动态参数或静态属性的对话框
+    通过 computed 计算对话框不同的文字 -->
+    <el-dialog
+      :title="'添加' + dialogText"
+      :visible.sync="addDialogVisible"
+      @close="addDialogClose"
+    >
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef">
+        <el-form-item
+          :label="dialogText + '名称'"
+          label-width="120px"
+          prop="attr_name"
+        >
+          <el-input v-model="addForm.attr_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addDialogVisible = false"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -109,6 +143,15 @@ export default {
       activeName: 'many',
       onlyParamsList: [],
       manyParamsList: [],
+      addDialogVisible: false,
+      addForm: {
+        attr_name: '',
+      },
+      addFormRules: {
+        attr_name: [
+          { required: true, message: '此项为必填项', trigger: 'blur' },
+        ],
+      },
     }
   },
   computed: {
@@ -121,6 +164,13 @@ export default {
     },
     categoryId() {
       return this.selectedCategoryKeys[this.selectedCategoryKeys.length - 1]
+    },
+    dialogText() {
+      if (this.activeName === 'many') {
+        return '动态参数'
+      } else {
+        return '静态属性'
+      }
     },
   },
   created() {
@@ -170,6 +220,16 @@ export default {
 
     // 展示编辑动态参数或静态属性的对话框
     showEditParamsDialog() {},
+
+    // 展示添加动态参数或静态属性的对话框
+    showAddDialog() {
+      this.addDialogVisible = true
+    },
+
+    // 关闭添加的对话框后，重置表单
+    addDialogClose() {
+      this.$refs.addFormRef.resetFields()
+    },
   },
 
   // 删除动态参数或静态属性
