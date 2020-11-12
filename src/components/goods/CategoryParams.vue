@@ -99,7 +99,7 @@
     </el-card>
 
     <!-- 添加动态参数或静态属性的对话框
-    通过 computed 计算对话框不同的文字 -->
+    通过 computed 计算对话框中不同的文字 -->
     <el-dialog
       :title="'添加' + dialogText"
       :visible.sync="addDialogVisible"
@@ -116,9 +116,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addParams">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -229,6 +227,27 @@ export default {
     // 关闭添加的对话框后，重置表单
     addDialogClose() {
       this.$refs.addFormRef.resetFields()
+    },
+
+    // 点击 确定 按钮，添加动态参数或静态属性
+    addParams() {
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post(
+          `categories/${this.categoryId}/attributes`,
+          {
+            attr_name: this.addForm.attr_name,
+            attr_sel: this.activeName,
+            // eslint-disable-next-line comma-dangle
+          }
+        )
+        if (res.meta.status !== 201) {
+          return this.$message.error(res.meta.msg)
+        }
+        this.$message.success(res.meta.msg)
+        this.getParamsList()
+        this.addDialogVisible = false
+      })
     },
   },
 
