@@ -239,7 +239,7 @@ export default {
       this.getParamsList()
     },
 
-    // 展示编辑动态参数或静态属性的对话框
+    // 展示编辑动态参数或静态属性的对话框 [API 1.7.4]
     async showEditParamsDialog(params) {
       const { data: res } = await this.$http.get(
         `categories/${this.categoryId}/attributes/${params.attr_id}`,
@@ -258,7 +258,7 @@ export default {
       this.$refs.editFormRef.resetFields()
     },
 
-    // 点击确定按钮，提交修改后的动态参数或静态属性
+    // 点击确定按钮，提交修改后的动态参数或静态属性 [API 1.7.5]
     editParams(params) {
       this.$refs.editFormRef.validate(async valid => {
         if (!valid) return
@@ -286,7 +286,7 @@ export default {
       this.$refs.addFormRef.resetFields()
     },
 
-    // 点击 确定 按钮，添加动态参数或静态属性
+    // 点击 确定 按钮，添加动态参数或静态属性 [API 1.7.2]
     addParams() {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
@@ -306,10 +306,32 @@ export default {
         this.addDialogVisible = false
       })
     },
-  },
 
-  // 删除动态参数或静态属性
-  deleteParams() {},
+    // 删除动态参数或静态属性
+    deleteParams(params) {
+      this.$msgbox
+        .confirm('确定删除？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        // eslint-disable-next-line space-before-function-paren
+        .then(async () => {
+          const { data: res } = await this.$http.delete(
+            // eslint-disable-next-line comma-dangle
+            `categories/${this.categoryId}/attributes/${params.attr_id}`
+          )
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          this.$message.success(res.meta.msg)
+          this.getParamsList()
+        })
+        .catch(() => {
+          this.$message.info('已取消')
+        })
+    },
+  },
 }
 </script>
 
