@@ -97,7 +97,33 @@
 
           <!-- 展示静态属性的表格 -->
           <el-table :data="onlyParamsList" border stripe>
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <!-- 展开行中的内容 -->
+              <template slot-scope="scope">
+                <el-tag
+                  v-for="(item, index) in scope.row.attr_vals"
+                  :key="index"
+                  closable
+                  @close="handleTagClose(index, scope.row)"
+                >
+                  {{ item }}
+                </el-tag>
+
+                <!-- 添加文本框和按钮 -->
+                <el-input
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <el-button v-else size="small" @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <el-table-column type="index"></el-table-column>
             <el-table-column
               label="属性名称"
