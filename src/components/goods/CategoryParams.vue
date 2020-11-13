@@ -43,6 +43,7 @@
                   v-for="(item, index) in scope.row.attr_vals"
                   :key="index"
                   closable
+                  @close="handleTagClose(index, scope.row)"
                 >
                   {{ item }}
                 </el-tag>
@@ -370,7 +371,7 @@ export default {
     },
 
     // 文本框失去焦点或触发键盘 enter 事件
-    async handleInputConfirm(row) {
+    handleInputConfirm(row) {
       // 判断文本框输入内容是否为空
       if (row.inputValue.trim().length === 0) {
         row.inputValue = ''
@@ -379,10 +380,24 @@ export default {
       }
 
       // 如果文本框输入内容合法，则将内容传入 attr_vals
-      // 数据准备完毕，即可发起 HTTP 请求 [API 1.7.5]
       row.attr_vals.push(row.inputValue.trim())
       row.inputValue = ''
       row.inputVisible = false
+
+      // 数据准备完毕，即可发起 HTTP 请求 [API 1.7.5]
+      this.saveAttrVals(row)
+    },
+
+    // 点击按钮，显示文本框，并自动获取焦点
+    showInput(row) {
+      row.inputVisible = true
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+
+    // 将对 attr_vals 的操作保存到数据库
+    async saveAttrVals(row) {
       const { data: res } = await this.$http.put(
         `categories/${this.categoryId}/attributes/${row.attr_id}`,
         {
@@ -398,12 +413,10 @@ export default {
       this.$message.success(res.meta.msg)
     },
 
-    // 点击按钮，显示文本框，并自动获取焦点
-    showInput(row) {
-      row.inputVisible = true
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus()
-      })
+    // 点击 tag 标签删除按钮
+    handleTagClose(index, row) {
+      row.attr_vals.splice(index, 1)
+      this.saveAttrVals(row)
     },
   },
 }
