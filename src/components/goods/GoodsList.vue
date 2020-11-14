@@ -44,7 +44,11 @@
           prop="add_time"
           width="150px"
           align="center"
-        ></el-table-column>
+        >
+          <template slot-scope="scope">
+            {{ scope.row.add_time | dateFormat }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="150px" align="center">
           <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
           <el-button
