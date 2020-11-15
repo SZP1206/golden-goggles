@@ -58,6 +58,19 @@
           ></el-button>
         </el-table-column>
       </el-table>
+
+      <!-- 页码条 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pagenum"
+        :page-sizes="[2, 5, 10, 20]"
+        :page-size="queryInfo.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        background
+      >
+      </el-pagination>
     </el-card>
   </div>
 </template>
@@ -89,9 +102,22 @@ export default {
       }
       this.$message.success(res.meta.msg)
       // console.log(res.data)
-      this.total = res.total
+      this.total = res.data.total
       this.goodsList = res.data.goods
       console.log(this.goodsList)
+      // console.log(this.total)
+    },
+
+    // 页码条每页条数改变
+    handleSizeChange(newSize) {
+      this.queryInfo.pagesize = newSize
+      this.getGoodsList()
+    },
+
+    // 页码条当前页码改变
+    handleCurrentChange(newNum) {
+      this.queryInfo.pagenum = newNum
+      this.getGoodsList()
     },
   },
 }
