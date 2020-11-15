@@ -10,8 +10,17 @@
       <!-- 搜索框和添加按钮 -->
       <el-row :gutter="15">
         <el-col :span="8">
-          <el-input placeholder="请输入内容" v-model="queryInfo.query" clearable @clear="getGoodsList">
-            <el-button slot="append" icon="el-icon-search" @click="getGoodsList"></el-button>
+          <el-input
+            placeholder="请输入内容"
+            v-model="queryInfo.query"
+            clearable
+            @clear="getGoodsList"
+          >
+            <el-button
+              slot="append"
+              icon="el-icon-search"
+              @click="getGoodsList"
+            ></el-button>
           </el-input>
         </el-col>
         <el-col :span="4">
@@ -50,12 +59,19 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150px" align="center">
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-          <el-button
-            type="danger"
-            icon="el-icon-delete"
-            size="mini"
-          ></el-button>
+          <template slot-scope="scope">
+            <el-button
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+            ></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              @click="deleteGoods(scope.row)"
+            ></el-button>
+          </template>
         </el-table-column>
       </el-table>
 
@@ -118,6 +134,31 @@ export default {
     handleCurrentChange(newNum) {
       this.queryInfo.pagenum = newNum
       this.getGoodsList()
+    },
+
+    // 删除商品
+    deleteGoods(goods) {
+      this.$msgbox
+        .confirm('确定删除？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        // eslint-disable-next-line space-before-function-paren
+        .then(async () => {
+          const { data: res } = await this.$http.delete(
+            // eslint-disable-next-line comma-dangle
+            `goods/${goods.goods_id}`
+          )
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          this.$message.success(res.meta.msg)
+          this.getGoodsList()
+        })
+        .catch(() => {
+          this.$message.info('已取消')
+        })
     },
   },
 }
