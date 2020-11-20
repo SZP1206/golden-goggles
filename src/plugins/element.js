@@ -7,6 +7,8 @@ import {
   Button,
   Card,
   Cascader,
+  Checkbox,
+  CheckboxGroup,
   Col,
   Container,
   Dialog,
@@ -34,6 +36,7 @@ import {
   Tag,
   Tooltip,
   Tree,
+  Upload,
 } from 'element-ui'
 
 Vue.use(Button)
@@ -68,5 +71,8 @@ Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Steps)
 Vue.use(Step)
+Vue.use(CheckboxGroup)
+Vue.use(Checkbox)
+Vue.use(Upload)
 Vue.prototype.$message = Message
 Vue.prototype.$msgbox = MessageBox
